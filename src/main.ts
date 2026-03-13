@@ -1,3 +1,4 @@
+// deno-lint-ignore no-import-prefix
 import * as BunnySDK from "https://esm.sh/@bunny.net/edgescript-sdk@0.12.0";
 
 // --- Routes ---
@@ -396,7 +397,7 @@ const HTML_PAGE = `<!DOCTYPE html>
   <button id="btn-undo">&#x21A9; Undo</button>
   <button id="btn-erase">&#x232B; Erase</button>
   <button id="btn-notes">&#x270E; Notes</button>
-  <button id="btn-hint">&#x1F4A1; Hint</button>
+  <button id="btn-hint">&#x1F4A1; Hint (3)</button>
   <button id="btn-new">&#x21BB; New</button>
 </div>
 
@@ -592,6 +593,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     history = [];
     gameOver = false;
     hintsUsed = 0;
+    updateHintButton();
     timerSec = 0;
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
@@ -684,21 +686,30 @@ const HTML_PAGE = `<!DOCTYPE html>
     document.getElementById('btn-notes').classList.toggle('notes-active', notesMode);
   }
 
+  function updateHintButton() {
+    var btn = document.getElementById('btn-hint');
+    var remaining = 3 - hintsUsed;
+    btn.textContent = '\\u{1F4A1} Hint (' + remaining + ')';
+    btn.disabled = remaining <= 0;
+  }
+
   function hint() {
     if (gameOver) return;
+    if (hintsUsed >= 3) return;
     // Find empty cells
-    const empty = [];
-    for (let i = 0; i < 81; i++) {
+    var empty = [];
+    for (var i = 0; i < 81; i++) {
       if (board[i] === 0 || board[i] !== solution[i]) empty.push(i);
     }
     if (empty.length === 0) return;
-    const idx = empty[Math.floor(Math.random() * empty.length)];
-    const prev = board[idx];
+    var idx = empty[Math.floor(Math.random() * empty.length)];
+    var prev = board[idx];
     board[idx] = solution[idx];
     notes[idx] = new Set();
     hintsUsed++;
     selectedIdx = idx;
     history.push({type:'value', idx, prev, next: solution[idx], prevNotes: new Set()});
+    updateHintButton();
     render();
     checkWin();
   }
